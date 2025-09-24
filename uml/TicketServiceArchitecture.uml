@@ -1,0 +1,73 @@
+@startuml TicketServiceArchitecture
+title TicketServiceArchitecture (Patterns: Static Content Hosting, Retry, Circuit Breaker)
+
+class Event {
+  - id: Long
+  - name: String
+  - availableTickets: int
+  + reserveTicket(): boolean
+}
+
+class Reservation {
+  - id: Long
+  - eventId: Long
+  - status: String
+}
+
+class EventController {
+  + getEvents(): List<Event>
+  + createEvent(event: Event): Event
+  + reserveTicket(eventId: Long): String
+}
+
+class EventService {
+  + getAllEvents(): List<Event>
+  + addEvent(event: Event): Event
+  + reserveTicket(eventId: Long): String
+}
+
+class PaymentService {
+  - circuitBreaker: CircuitBreaker
+  - retryHandler: RetryHandler
+  + processPayment(amount: double): boolean
+}
+
+class PaymentGateway {
+  + charge(amount: double): boolean
+}
+
+class RetryHandler {
+  - maxRetries: int
+  + execute(operation: () -> boolean): boolean
+}
+
+class CircuitBreaker {
+  - failureThreshold: int
+  - failureCount: int
+  - state: String
+  + allowRequest(): boolean
+  + recordSuccess(): void
+  + recordFailure(): void
+}
+
+EventController --> EventService
+EventService --> Event
+EventService --> Reservation
+EventService --> PaymentService
+PaymentService --> PaymentGateway
+PaymentService --> RetryHandler
+PaymentService --> CircuitBreaker
+
+note top of EventController
+  REST API layer
+  - Hosts static content (index.html)
+  - Handles HTTP requests
+end note
+
+note right of PaymentService
+  Combines Retry + Circuit Breaker
+  to ensure resilience when calling
+  external payment gateway
+end note
+
+@enduml
