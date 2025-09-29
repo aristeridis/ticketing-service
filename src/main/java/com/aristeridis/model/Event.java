@@ -10,7 +10,14 @@ public class Event {
     private String title;
     private LocalDate date;
     private int availableSeats;
+    private int availableTickets;
 
     public Event() {
+    }
+
+    public Event(Long id, String title, int availableSeats) {
+        this.id = id;
+        this.title = title;
+        this.availableSeats = availableSeats;
     }
 }
